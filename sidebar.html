@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: sans-serif; padding: 12px; font-size: 14px; }
+    label { display:block; margin-top: 10px; font-weight: bold; }
+    input, select, textarea { width: 100%; box-sizing: border-box; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; }
+    .btns { margin-top: 15px; display: flex; gap: 8px; }
+    button { flex: 1; padding: 10px; cursor: pointer; border: none; border-radius: 4px; }
+    .save-btn { background-color: #1a73e8; color: white; }
+    .clear-btn { background-color: #f1f3f4; color: #3c4043; }
+    #msg { margin-top: 10px; color: blue; font-weight: bold; }
+    #err { margin-top: 10px; color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div>
+    <label>既存設問読込 (Q4-5等)</label>
+    <div style="display:flex; gap:4px;">
+      <input type="text" id="lookup" placeholder="例: Q1-1">
+      <button onclick="loadQuestion()" style="flex:0; white-space:nowrap;">読込</button>
+    </div>
+  </div>
+
+  <hr>
+
+  <label>qkey (自動付与)</label>
+  <input type="text" id="qkey" readonly>
+
+  <label>表示ID (qid)</label>
+  <input type="text" id="qid">
+
+  <label>設問レベル (q_level)</label>
+  <select id="q_level">
+    <option value="1">1</option>
+    <option value="2" selected>2</option>
+    <option value="3">3</option>
+  </select>
+
+  <label>親設問 (parent_qkey)</label>
+  <input type="text" id="parent_qkey">
+
+  <label>順序 (order)</label>
+  <input type="number" id="order" min="0" step="1">
+
+  <label>設問テキスト</label>
+  <textarea id="question"></textarea>
+
+  <label>タイプ</label>
+  <select id="type">
+    <option value="single">単一選択 (single)</option>
+    <option value="multi">複数選択 (multi)</option>
+    <option value="Text">見出し文 (Text)</option>
+    <option value="free_answer">自由記述 (free_answer)</option>
+    <option value="number">数値記述 (number)</option>
+  </select>
+
+  <label>選択肢 (改行区切り。例: はい / いいえ)</label>
+  <textarea id="choices_text" style="height:100px;"></textarea>
+
+  <label>設問概要 (instruction)</label>
+  <textarea id="instruction"></textarea>
+
+  <label>必須回答 (required)</label>
+  <select id="required">
+    <option value="0">任意</option>
+    <option value="1">必須</option>
+  </select>
+
+  <label>条件設定 (show_if)</label>
+  <input type="text" id="show_if">
+
+  <label>変数名 (var_name)</label>
+  <input type="text" id="var_name">
+
+  <label>タグ (tags, コンマ区切り)</label>
+  <input type="text" id="tags">
+
+  <label>メモ (note)</label>
+  <textarea id="note"></textarea>
+
+  <label>状況 (status)</label>
+  <select id="status">
+    <option value="draft">draft</option>
+    <option value="active">active</option>
+    <option value="archived">archived</option>
+  </select>
+
+  <label>更新日時 (updated_at)</label>
+  <input type="text" id="updated_at" readonly>
+
+  <div class="btns">
+    <button class="save-btn" onclick="saveData()">保存</button>
+    <button class="clear-btn" onclick="clearForm()">クリア</button>
+  </div>
+
+  <div id="conn_status" style="margin-top:8px; color:#1a73e8; font-weight:bold;">接続チェック中...</div>
+  <div id="msg"></div>
+  <div id="err"></div>
+
+  <script>
+    function setStatus(m) { document.getElementById("conn_status").innerText = m || ""; }
+    function setMsg(m) { document.getElementById("msg").innerText = m; document.getElementById("err").innerText = ""; }
+    function setErr(e) { document.getElementById("err").innerText = e; document.getElementById("msg").innerText = ""; }
+
+    function ensureRunner_() {
+      if (!window.google || !google.script || !google.script.run) {
+        setErr("google.script.run が利用できません。サイドバーは Apps Script から開いていますか？");
+        return false;
+      }
+      return true;
+    }
+
+    window.onerror = function (msg, src, line, col, err) {
+      setStatus("JSエラー: " + msg + " (" + line + ":" + col + ")");
+    };
+
+    function runPing_() {
+      try {
+        const hasGoogle = !!window.google;
+        const hasScript = hasGoogle && !!google.script;
+        const hasRun = hasScript && !!google.script.run;
+        setStatus("接続チェック中... (google=" + hasGoogle + ", script=" + hasScript + ", run=" + hasRun + ")");
+        if (!ensureRunner_()) return;
+        google.script.run
+          .withSuccessHandler(ts => setStatus("接続OK: " + ts))
+          .withFailureHandler(err => setStatus("接続NG: " + (err && err.message ? err.message : err)))
+          .ping();
+      } catch (e) {
+        setStatus("JS例外: " + (e && e.message ? e.message : e));
+      }
+    }
+
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+      setTimeout(runPing_, 0);
+    } else {
+      window.addEventListener("load", () => setTimeout(runPing_, 0));
+    }
+
+    function loadQuestion() {
+      if (!ensureRunner_()) return;
+      const qid = document.getElementById("lookup").value;
+      if(!qid) return;
+      setMsg("読込中...");
+      const timeoutId = setTimeout(() => {
+        setErr("読み込みがタイムアウトしました。シート名や権限、通信状態を確認してください。");
+      }, 15000);
+      google.script.run
+        .withSuccessHandler(res => {
+          try {
+            clearTimeout(timeoutId);
+            if (res && res.error) {
+              setErr("エラーが発生しました。管理者に連絡してください。");
+              return;
+            }
+            document.getElementById("qkey").value = res.question.qkey || "";
+            document.getElementById("qid").value = res.question.qid || res.question.display_id || "";
+            document.getElementById("q_level").value = res.question.q_level || "2";
+            document.getElementById("parent_qkey").value = res.question.parent_qkey || "";
+            document.getElementById("order").value = res.question.order || 0;
+            document.getElementById("question").value = res.question.question || "";
+          document.getElementById("type").value = res.question.type || "single";
+            document.getElementById("instruction").value = res.question.instruction || "";
+            document.getElementById("required").value = res.question.required ? "1" : "0";
+            document.getElementById("show_if").value = res.question.show_if || "";
+            document.getElementById("var_name").value = res.question.var_name || "";
+            document.getElementById("tags").value = res.question.tags || "";
+            document.getElementById("note").value = res.question.note || "";
+            document.getElementById("status").value = res.question.status || "draft";
+            document.getElementById("updated_at").value = res.question.updated_at || "";
+            document.getElementById("choices_text").value = res.choices_text;
+            setMsg("読込完了");
+          } catch (e) {
+            setErr("エラーが発生しました。管理者に連絡してください。");
+          }
+        })
+        .withFailureHandler(err => {
+          clearTimeout(timeoutId);
+          setErr("エラーが発生しました。管理者に連絡してください。");
+        })
+        .apiGetQuestionDetail(qid);
+    }
+
+    function saveData() {
+      const payload = {
+        qkey: document.getElementById("qkey").value,
+        qid: document.getElementById("qid").value,
+        q_level: document.getElementById("q_level").value,
+        parent_qkey: document.getElementById("parent_qkey").value,
+        order: document.getElementById("order").value,
+        type: document.getElementById("type").value,
+        question: document.getElementById("question").value,
+        instruction: document.getElementById("instruction").value,
+        required: document.getElementById("required").value,
+        show_if: document.getElementById("show_if").value,
+        var_name: document.getElementById("var_name").value,
+        tags: document.getElementById("tags").value,
+        note: document.getElementById("note").value,
+        status: document.getElementById("status").value,
+        choices_text: document.getElementById("choices_text").value
+      };
+      setMsg("保存中...");
+      google.script.run
+        .withSuccessHandler(res => {
+          document.getElementById("qkey").value = res.qkey;
+          setMsg("保存しました (" + res.qkey + ")");
+        })
+        .withFailureHandler(err => setErr(err.message))
+        .saveQuestion(payload);
+    }
+
+    function clearForm() {
+      // 全ての要素をループしてリセット
+      const elements = ["lookup", "qkey", "qid", "q_level", "parent_qkey", "order", "question", "type", "instruction", "required", "show_if", "choices_text", "var_name", "tags", "note", "status", "updated_at"];
+      elements.forEach(id => {
+        const el = document.getElementById(id);
+        if(!el) return;
+        if (el.tagName === "SELECT") {
+          if (id === "q_level") el.value = "2";
+          else if (id === "required") el.value = "0";
+          else if (id === "status") el.value = "draft";
+          else if (id === "type") el.value = "single";
+          else el.value = "";
+        } else {
+          el.value = "";
+        }
+      });
+      setMsg("フォームをクリアしました。新規登録モードです。");
+    }
+  </script>
+</body>
+</html>
