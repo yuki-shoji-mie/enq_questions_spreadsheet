@@ -1,4 +1,4 @@
-"/**
+/**
  * 定数定義
  */
 const SHEET_Q = "Questions";
@@ -393,4 +393,4 @@ function exportMdYamlToDrive() {
   const filename = `questions_${Utilities.formatDate(new Date(), "JST", "yyyyMMdd_HHmmss")}.md`;
   DriveApp.createFile(filename, content, MimeType.PLAIN_TEXT);
   SpreadsheetApp.getUi().alert("MD+YAMLを書き出しました: " + filename);
-}"
+}
