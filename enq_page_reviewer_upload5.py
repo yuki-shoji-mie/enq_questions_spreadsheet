@@ -298,6 +298,14 @@ def flag_cell(qid: str, val: str, meta: dict):
 st.set_page_config(layout="wide")
 st.markdown("### アンケート OCR 修正ページレビュア（チェックポイント付き）")
 
+# フォントチェック（一時、後に消去）
+
+APP_DIR = Path(__file__).resolve().parent
+BUNDLED_FONT = APP_DIR / "assets" / "fonts" / "NotoSansCJK-Regular.ttc"
+
+st.sidebar.write("BUNDLED_FONT:", str(BUNDLED_FONT))
+st.sidebar.write("exists:", BUNDLED_FONT.exists())
+
 with st.sidebar:
     st.header("入力（アップロード）")
     up_ocr = st.file_uploader("OCR出力CSV", type=["csv"])
@@ -734,3 +742,4 @@ with tabs[3]:
         file_name=out_name,
         mime="text/csv",
     )
+
