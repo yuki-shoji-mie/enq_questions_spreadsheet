@@ -139,6 +139,9 @@ def draw_overlay_boxes(
     base = img.convert("RGBA")
     overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
+    # ★追加：画像サイズとラベルカウンタ
+    w, h = base.size
+    i = 0
 
     # フォント（問番号）
     font_label = None
@@ -742,6 +745,7 @@ with tabs[3]:
         file_name=out_name,
         mime="text/csv",
     )
+
 
 
 
