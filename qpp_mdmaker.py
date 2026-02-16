@@ -79,7 +79,7 @@ if q_file and c_file:
             if relevant:
                 md_output += "choices:\n"
                 # choice_noがあればソート
-               relevant.sort(key=lambda x: x.get('choice_no', 0) if pd.notna(x.get('choice_no', 0)) else 0)
+                relevant.sort(key=lambda x: x.get('choice_no', 0) if pd.notna(x.get('choice_no', 0)) else 0)
                 for c in relevant:
                     md_output += f'  "{c.get("choice_value")}": "{c.get("choice_label")}"\n'
 
@@ -104,3 +104,4 @@ if q_file and c_file:
 else:
 
     st.info("QuestionsとChoicesの2つのファイルをアップロードしてください。")
+
