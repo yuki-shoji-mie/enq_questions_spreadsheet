@@ -15,6 +15,10 @@ from PIL import Image, ImageDraw, ImageFont
 # Autosave / Checkpoint
 # =========================
 APP_DIR = Path(__file__).resolve().parent
+
+# ★ repo同梱フォント（GitHubに置いた実ファイル名に合わせる）
+BUNDLED_FONT = APP_DIR / "assets" / "fonts" / "NotoSansCJKjp-Regular.otf"
+
 AUTOSAVE_DIR = APP_DIR / "autosave"
 AUTOSAVE_DIR.mkdir(exist_ok=True)
 
@@ -141,7 +145,7 @@ def draw_overlay_boxes(
     for fp in [
         "/usr/share/fonts/opentype/ipafont-gothic/ipag.ttf",
         "/usr/share/fonts/truetype/fonts-japanese-gothic.ttf",
-        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.otf",
     ]:
         try:
             font_label = ImageFont.truetype(fp, 32)
@@ -156,7 +160,7 @@ def draw_overlay_boxes(
     for fp in [
         "/usr/share/fonts/opentype/ipafont-gothic/ipag.ttf",
         "/usr/share/fonts/truetype/fonts-japanese-gothic.ttf",
-        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.otf",
     ]:
         try:
             font_value = ImageFont.truetype(fp, value_font_size)
@@ -299,9 +303,6 @@ st.set_page_config(layout="wide")
 st.markdown("### アンケート OCR 修正ページレビュア（チェックポイント付き）")
 
 # フォントチェック（一時、後に消去）
-
-APP_DIR = Path(__file__).resolve().parent
-BUNDLED_FONT = APP_DIR / "assets" / "fonts" / "NotoSansCJKjp-Regular.otf"
 
 st.sidebar.write("BUNDLED_FONT:", str(BUNDLED_FONT))
 st.sidebar.write("exists:", BUNDLED_FONT.exists())
@@ -742,5 +743,6 @@ with tabs[3]:
         file_name=out_name,
         mime="text/csv",
     )
+
 
 
