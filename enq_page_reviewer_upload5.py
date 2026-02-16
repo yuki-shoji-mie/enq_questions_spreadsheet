@@ -143,6 +143,7 @@ def draw_overlay_boxes(
     # フォント（問番号）
     font_label = None
     for fp in [
+        str(BUNDLED_FONT),  # ★同梱フォントを最優先
         "/usr/share/fonts/opentype/ipafont-gothic/ipag.ttf",
         "/usr/share/fonts/truetype/fonts-japanese-gothic.ttf",
         "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.otf",
@@ -158,6 +159,7 @@ def draw_overlay_boxes(
     # フォント（値表示）
     font_value = None
     for fp in [
+        str(BUNDLED_FONT),  # ★同梱フォントを最優先
         "/usr/share/fonts/opentype/ipafont-gothic/ipag.ttf",
         "/usr/share/fonts/truetype/fonts-japanese-gothic.ttf",
         "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.otf",
@@ -169,9 +171,6 @@ def draw_overlay_boxes(
             pass
     if font_value is None:
         font_value = ImageFont.load_default()
-
-    w, h = base.size
-    i = 0
 
     for qid, b in (qid_to_bbox or {}).items():
         try:
@@ -743,6 +742,7 @@ with tabs[3]:
         file_name=out_name,
         mime="text/csv",
     )
+
 
 
 
