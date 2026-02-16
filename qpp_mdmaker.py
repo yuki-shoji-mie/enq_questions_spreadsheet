@@ -48,7 +48,7 @@ if q_file and c_file:
         for _, q in questions.iterrows():
             qid = str(q.get('qid', 'N/A'))
             qkey = str(q.get('qkey', 'undefined'))
-            level = int(q.get('q_level', 2))
+            level = int(q['q_level']) if pd.notna(q.get('q_level')) else 2
             title = str(q.get('question', ''))
 
             # 見出し生成
@@ -79,7 +79,7 @@ if q_file and c_file:
             if relevant:
                 md_output += "choices:\n"
                 # choice_noがあればソート
-                relevant.sort(key=lambda x: x.get('choice_no', 0))
+               relevant.sort(key=lambda x: x.get('choice_no', 0) if pd.notna(x.get('choice_no', 0)) else 0)
                 for c in relevant:
                     md_output += f'  "{c.get("choice_value")}": "{c.get("choice_label")}"\n'
 
@@ -102,4 +102,5 @@ if q_file and c_file:
             mime="text/markdown"
         )
 else:
+
     st.info("QuestionsとChoicesの2つのファイルをアップロードしてください。")
