@@ -3,5 +3,3 @@ pandas
 scipy
 PyMuPDF
 pillow
-io
-re
