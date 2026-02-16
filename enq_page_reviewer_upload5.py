@@ -336,7 +336,7 @@ with st.sidebar:
     st.subheader("OCR値の枠内表示")
     show_values = True
     value_font_size = st.slider("値の文字サイズ", 16, 80, 48, 1)
-    value_alpha = st.slider("値の透明度（薄いほど透ける）", 20, 160, 80, 5)  # 0..255
+    value_alpha = st.slider("値の透明度（薄いほど透ける）", 20, 255, 80, 5)  # 0..255
     value_max_chars = st.slider("値の最大文字数", 6, 20, 12, 1)
     st.divider()
     st.header("ページ割り当て")
@@ -753,6 +753,7 @@ with tabs[3]:
         file_name=out_name,
         mime="text/csv",
     )
+
 
 
 
