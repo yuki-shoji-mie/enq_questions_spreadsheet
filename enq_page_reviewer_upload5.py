@@ -184,11 +184,19 @@ def draw_overlay_boxes(
         # 赤枠
         draw.rectangle([x0, y0, x1, y1], outline=(255, 0, 0, 255), width=3)
 
-        # 問番号ラベル（枠の左上）
+        # 問番号ラベル（枠の右上：右寄せ）
         if show_labels:
             dy = (i % 3) * 36
-            draw.text((x0 + 4, y0 + 4 + dy), str(qid), fill=(255, 0, 0, 255), font=font_label)
+            label = str(qid)
+
+            tw, th = _text_wh(draw, label, font_label)
+            pad = 4
+            x = x1 - pad - tw          # ← 右端から文字幅分だけ左へ
+            y = y0 + pad + dy
+
+            draw.text((x, y), label, fill=(255, 0, 0, 255), font=font_label)
             i += 1
+
 
         # 枠内OCR値（半透明）
         if show_values and qid_to_value is not None:
@@ -745,6 +753,7 @@ with tabs[3]:
         file_name=out_name,
         mime="text/csv",
     )
+
 
 
 
