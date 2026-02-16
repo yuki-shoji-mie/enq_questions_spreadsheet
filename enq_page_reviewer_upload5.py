@@ -301,7 +301,7 @@ st.markdown("### アンケート OCR 修正ページレビュア（チェック�
 # フォントチェック（一時、後に消去）
 
 APP_DIR = Path(__file__).resolve().parent
-BUNDLED_FONT = APP_DIR / "assets" / "fonts" / "NotoSansCJK-Regular.ttc"
+BUNDLED_FONT = APP_DIR / "assets" / "fonts" / "NotoSansCJKjp-Regular.otf"
 
 st.sidebar.write("BUNDLED_FONT:", str(BUNDLED_FONT))
 st.sidebar.write("exists:", BUNDLED_FONT.exists())
@@ -742,4 +742,5 @@ with tabs[3]:
         file_name=out_name,
         mime="text/csv",
     )
+
 
