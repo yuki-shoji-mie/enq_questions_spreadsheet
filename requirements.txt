@@ -3,3 +3,4 @@ pandas
 scipy
 PyMuPDF
 pillow
+chardet
